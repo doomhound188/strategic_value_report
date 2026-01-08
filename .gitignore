@@ -1,0 +1,28 @@
+# Bytes
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+
+# Environment Variables & Secrets (CRITICAL for security)
+.env
+.env.*
+!.env.example
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs and Reports
+*.log
+quarterly_summary.md  # Generated report (optional to ignore)
