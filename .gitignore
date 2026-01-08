@@ -25,4 +25,4 @@ dist/
 
 # Logs and Reports
 *.log
-quarterly_summary.md  # Generated report (optional to ignore)
+quarterly_summary.md

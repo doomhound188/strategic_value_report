@@ -1,6 +1,23 @@
-# ConnectWise Ticket Summarizer
+# Strategic Value Report Generator
 
-This tool fetches your ConnectWise tickets, notes, and time entries, and uses Google's Gemini AI to generate a quarterly work summary.
+This tool transforms your raw ConnectWise service data (tickets, notes, time entries) into a high-impact **Strategic Value Report**.
+
+Instead of a simple list of tasks, it uses **Google's Gemini 3 Pro (Preview)** to analyze your work and generate a persuasive business case tailored for:
+*   **Performance Reviews**
+*   **Compensation Negotiations**
+*   **Promotion Justifications**
+
+The AI acts as a "Career Negotiation Consultant," translating technical data into **Executive-Level** insights focused on ROI, financial impact, and strategic leadership.
+
+## Key Features
+
+*   **Automated Data Gathering**: Fetches your tickets and time entries directly from ConnectWise Manage.
+*   **ROI-Focused Analysis**: Quantifies the financial impact of your work (e.g., "Saved X hours," "Protected $Y revenue").
+*   **Strategic Narrative**: Organizes your contributions into four critical pillars:
+    1.  💰 **Direct Financial Impact & ROI**
+    2.  🏛️ **Strategic Leadership & Force Multiplication**
+    3.  🛡️ **Critical Infrastructure & Stability**
+    4.  🚀 **Future-Proofing & Innovation**
 
 ## Setup
 
@@ -29,11 +46,11 @@ Run the script:
 python main.py
 ```
 
-- The script defaults to fetching tickets from `2024-01-01` onwards.
-- It will process 20 tickets by default (for safety/testing). You can change `MAX_TICKETS` in `main.py` when ready for a full run.
-- The output will be displayed in the console and saved to `quarterly_summary.md`.
+-   The script defaults to fetching tickets from `2024-01-01` onwards.
+-   It will process a subset of tickets by default (controlled by `MAX_TICKETS` in `main.py`).
+-   The output will be saved to **`quarterly_summary.md`**.
 
 ## Troubleshooting
 
-- **401 Unauthorized**: Check your Company ID and Keys.
-- **No tickets found**: Check if `CW_MEMBER_ID` is correct (matches the `owner` field in CW). You can try removing the member ID check in `main.py` to fetch all tickets to debug.
+-   **401 Unauthorized**: Check your Company ID and Keys.
+-   **No tickets found**: Check if `CW_MEMBER_ID` is correct (matches the `owner` field in CW).
