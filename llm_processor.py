@@ -56,6 +56,13 @@ class LLMProcessor:
         ### 4. 🚀 Future-Proofing & Innovation
         *   Highlight work on cutting-edge tech (Rewst, AI, Security) that positions the company for future growth.
         *   Frame this as "Andrew is leading the company's technical evolution."
+
+        ### 5. 💎 Embodiment of Core Values
+        *   Explicitly highlight instances where Andrew demonstrated the organization's Core Values:
+            *   **Care**: Foster a friendly, equitable environment of empathy and humility; Do the right thing because it is the right thing to do.
+            *   **Respect**: Always do your best with an emphasis on ownership; Take responsibility – blame no one; Fully deliver.
+            *   **Tenacity**: Do not be afraid to ask questions; Relentlessly pursue quality; Continue to learn.
+            *   **Good Vibes**: Contribute to a positive atmosphere; Be humble.
         
         **Tone:** Authoritative, persuasive, executive-level, and confident. 
         **Key Message:** "The business cannot afford to lose Andrew, and his contributions far exceed his current compensation."
