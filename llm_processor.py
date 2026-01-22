@@ -7,17 +7,17 @@ class LLMProcessor:
         'gemini': {
             'name': 'Google Gemini',
             'env_key': 'GOOGLE_API_KEY',
-            'models': ['gemini-2.0-flash-001', 'gemini-2.0-flash-thinking-exp-01-21', 'gemini-2.0-pro-exp-02-05', 'gemini-1.5-pro']
+            'models': ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-3-flash-preview', 'gemini-3-pro-preview']
         },
         'openai': {
             'name': 'OpenAI',
             'env_key': 'OPENAI_API_KEY',
-            'models': ['gpt-4o', 'gpt-4o-mini', 'o1-mini', 'o3-mini']
+            'models': ['gpt-5-mini', 'gpt-5-nano', 'gpt-5.2']
         },
         'anthropic': {
             'name': 'Anthropic',
             'env_key': 'ANTHROPIC_API_KEY',
-            'models': ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022']
+            'models': ['claude-sonnet-4-5', 'claude-haiku-4-5']
         }
     }
     
@@ -56,7 +56,9 @@ class LLMProcessor:
         """Return list of available providers and their models based on configured API keys."""
         available = []
         for key, config in cls.PROVIDERS.items():
-            if os.getenv(config['env_key']):
+            api_key = os.getenv(config['env_key'])
+            # Check if API key exists and is not a placeholder
+            if api_key and not api_key.startswith('your_'):
                 # Flatten the list: Return unique entry for each model
                 for model in config['models']:
                     available.append({
@@ -159,16 +161,3 @@ class LLMProcessor:
                 ]
             )
             return response.content[0].text
-    
-    @classmethod
-    def get_available_providers(cls):
-        """Return list of available providers based on configured API keys."""
-        available = []
-        for key, config in cls.PROVIDERS.items():
-            if os.getenv(config['env_key']):
-                available.append({
-                    'id': key,
-                    'name': config['name'],
-                    'model': config['model']
-                })
-        return available
