@@ -19,32 +19,38 @@ The AI acts as a "Career Negotiation Consultant," translating technical data int
     3.  🛡️ **Critical Infrastructure & Stability**
     4.  🚀 **Future-Proofing & Innovation**
 
-## Setup
+## Usage
+
+The easiest way to run the application is using the pre-built container from GitHub Container Registry.
+
+### 1. Configure Environment
+Create a `.env` file with your ConnectWise and AI credentials (see `.env.example`).
+
+### 2. Run with Podman/Docker
+
+```bash
+# Pull the latest image
+podman pull ghcr.io/doomhound188/strategic_value_report:latest
+
+# Run the container (background)
+podman run -d -p 5000:5000 --env-file .env ghcr.io/doomhound188/strategic_value_report:latest
+```
+
+Access the interface at `http://localhost:5000`.
+
+## Local Development
+
+To run locally directly with Python:
 
 1.  **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Configure Environment**:
-    - Copy `.env.example` to `.env`:
-        ```bash
-        cp .env.example .env
-        ```
-    - Edit `.env` and fill in your details:
-        - `CW_COMPANY_ID`: Your ConnectWise Company ID
-        - `CW_SITE_URL`: AWS URL e.g., `api-na.myconnectwise.net`
-        - `CW_PUBLIC_KEY` & `CW_PRIVATE_KEY`: API Keys from "My Account" > "API Keys"
-        - `CW_MEMBER_ID`: Your username (to filter tickets where you are the owner)
-        - `GOOGLE_API_KEY`: API Key from Google AI Studio
-
-## Usage
-
-Run the script:
-
-```bash
-python main.py
-```
+2.  **Run the script**:
+    ```bash
+    python app.py
+    ```
 
 -   The script defaults to fetching tickets from `2024-01-01` onwards.
 -   It will process a subset of tickets by default (controlled by `MAX_TICKETS` in `main.py`).
