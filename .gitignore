@@ -1,4 +1,4 @@
-# Bytes
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,11 +7,11 @@ __pycache__/
 venv/
 .venv/
 env/
-.env/
 
-# Environment Variables & Secrets (CRITICAL for security)
+# Environment Variables & Secrets (CRITICAL)
 .env
-.env.*
+.env.local
+.env.*.local
 !.env.example
 
 # Distribution / Packaging
@@ -22,8 +22,18 @@ dist/
 # IDEs
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Logs and Reports
 *.log
 quarterly_summary.md
 prompt_archive*
+
+# Docker / Podman
+*.tar
+docker-compose.override.yml
+
+# OS files
+.DS_Store
+Thumbs.db

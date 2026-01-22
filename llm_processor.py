@@ -1,19 +1,51 @@
-from google import genai
 import os
-import json
 
 class LLMProcessor:
-    def __init__(self):
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            raise ValueError("Missing GOOGLE_API_KEY in environment variables.")
+    """Multi-provider LLM processor supporting Gemini, OpenAI, and Anthropic."""
+    
+    PROVIDERS = {
+        'gemini': {
+            'name': 'Google Gemini',
+            'model': 'gemini-2.5-pro',
+            'env_key': 'GOOGLE_API_KEY'
+        },
+        'openai': {
+            'name': 'OpenAI',
+            'model': 'gpt-4o',
+            'env_key': 'OPENAI_API_KEY'
+        },
+        'anthropic': {
+            'name': 'Anthropic',
+            'model': 'claude-sonnet-4-20250514',
+            'env_key': 'ANTHROPIC_API_KEY'
+        }
+    }
+    
+    def __init__(self, provider='gemini'):
+        self.provider = provider.lower()
+        if self.provider not in self.PROVIDERS:
+            raise ValueError(f"Unknown provider: {provider}. Supported: {list(self.PROVIDERS.keys())}")
         
-        self.client = genai.Client(api_key=api_key)
-
-    def summarize_quarterly_work(self, ticket_data):
-        """
-        ticket_data: List of dicts containing ticket info, notes, and time.
-        """
+        config = self.PROVIDERS[self.provider]
+        self.model = config['model']
+        api_key = os.getenv(config['env_key'])
+        
+        if not api_key:
+            raise ValueError(f"Missing {config['env_key']} in environment variables.")
+        
+        # Initialize the appropriate client
+        if self.provider == 'gemini':
+            from google import genai
+            self.client = genai.Client(api_key=api_key)
+        elif self.provider == 'openai':
+            from openai import OpenAI
+            self.client = OpenAI(api_key=api_key)
+        elif self.provider == 'anthropic':
+            import anthropic
+            self.client = anthropic.Anthropic(api_key=api_key)
+    
+    def _build_prompt(self, ticket_data, technician_name="the employee"):
+        """Build the prompt from ticket data."""
         prompt_data = []
         for t in ticket_data:
             prompt_data.append(f"""
@@ -26,53 +58,94 @@ class LLMProcessor:
         
         full_text = "\n".join(prompt_data)
         
-        prompt = f"""
-        You are a high-level Career Negotiation Consultant and Strategic Business Analyst acting on behalf of **Andrew**.
-        Andrew is preparing for a critical performance review with the explicit goal of **securing a significant compensation increase**.
+        return f"""
+        You are a Strategic Business Analyst specializing in translating technical work into business value for performance reviews.
         
-        Your objective is to transform the provided ConnectWise ticket data into a powerful business case that demonstrates massive Return on Investment (ROI) and irreplaceable value to the organization.
+        You are creating a Strategic Value Report for **{technician_name}** to be used in their performance review.
+        
+        Your objective is to transform the provided ConnectWise ticket data into a compelling business case that demonstrates Return on Investment (ROI) and value to the organization.
         
         **Data Provided:**
-        Ticket summaries, notes, and time logs.
+        Ticket summaries, notes, and time logs for {technician_name}.
         
         **Instructions:**
-        Generate a **Strategic Value Report** that controls the narrative of the review. Do not just list tasks. You must translate technical work into **business value** and **financial impact**.
+        Generate a **Strategic Value Report** that highlights achievements and contributions. Do not just list tasks. Translate technical work into **business value** and **organizational impact**.
         
         Structure the output as follows:
         
         ### 1. 💰 Direct Financial Impact & ROI
         *   Identify automations, fixes, or projects that saved time/money or protected revenue.
-        *   **Quantify the value**: e.g., "Automated X process, saving Y hours annually, equivalent to $Z in labor costs."
+        *   **Quantify the value** where possible: e.g., "Automated X process, saving Y hours annually."
         *   Highlight risks mitigated that could have cost the company clients or reputation.
         
-        ### 2. 🏛️ Strategic Leadership & Force Multiplication
-        *   Show how Andrew enables *others* to be more productive (mentoring, documentation, tool creation).
-        *   Position Andrew not just as a worker, but as a "Force Multiplier" who elevates the entire team's output.
+        ### 2. 🏛️ Strategic Contributions & Team Enablement
+        *   Show how {technician_name} enables others to be more productive (mentoring, documentation, tool creation).
+        *   Highlight collaborative work and knowledge sharing.
+        *   Position contributions that elevate the entire team's output.
         
-        ### 3. 🛡️ Critical Infrastructure & Stability
-        *   List the "Keep the Lights On" wins where Andrew prevented downtime or disasters.
-        *   Emphasize reliability: "Andrew is the safety net for the department."
+        ### 3. 🛡️ Critical Infrastructure & Reliability
+        *   List the key wins where {technician_name} prevented downtime, resolved critical issues, or maintained system stability.
+        *   Emphasize reliability and dependability in handling important systems.
         
-        ### 4. 🚀 Future-Proofing & Innovation
-        *   Highlight work on cutting-edge tech (Rewst, AI, Security) that positions the company for future growth.
-        *   Frame this as "Andrew is leading the company's technical evolution."
+        ### 4. 🚀 Innovation & Growth Initiatives
+        *   Highlight work on new technologies, process improvements, or forward-thinking projects.
+        *   Frame contributions that position the company for future success.
 
-        ### 5. 💎 Embodiment of Core Values
-        *   Explicitly highlight instances where Andrew demonstrated the organization's Core Values:
-            *   **Care**: Foster a friendly, equitable environment of empathy and humility; Do the right thing because it is the right thing to do.
-            *   **Respect**: Always do your best with an emphasis on ownership; Take responsibility – blame no one; Fully deliver.
-            *   **Tenacity**: Do not be afraid to ask questions; Relentlessly pursue quality; Continue to learn.
-            *   **Good Vibes**: Contribute to a positive atmosphere; Be humble.
+        ### 5. 💎 Professional Excellence
+        *   Highlight instances demonstrating professionalism, initiative, and commitment.
+        *   Include examples of going above and beyond, taking ownership, and continuous improvement.
         
-        **Tone:** Authoritative, persuasive, executive-level, and confident. 
-        **Key Message:** "The business cannot afford to lose Andrew, and his contributions far exceed his current compensation."
+        **Tone:** Professional, objective, and executive-level. Present facts with clear business context.
+        **Focus:** Demonstrate the tangible value {technician_name} brings to the organization.
         
         Data:
         {full_text}
         """
+    
+    def summarize_quarterly_work(self, ticket_data, technician_name="the employee"):
+        """
+        Generate a strategic value report from ticket data.
+        ticket_data: List of dicts containing ticket info, notes, and time.
+        technician_name: Name of the technician for the report.
+        """
+        prompt = self._build_prompt(ticket_data, technician_name)
         
-        response = self.client.models.generate_content(
-            model='gemini-3-pro-preview', 
-            contents=prompt
-        )
-        return response.text
+        if self.provider == 'gemini':
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt
+            )
+            return response.text
+        
+        elif self.provider == 'openai':
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a strategic business analyst and career negotiation consultant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response.choices[0].message.content
+        
+        elif self.provider == 'anthropic':
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=8192,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response.content[0].text
+    
+    @classmethod
+    def get_available_providers(cls):
+        """Return list of available providers based on configured API keys."""
+        available = []
+        for key, config in cls.PROVIDERS.items():
+            if os.getenv(config['env_key']):
+                available.append({
+                    'id': key,
+                    'name': config['name'],
+                    'model': config['model']
+                })
+        return available

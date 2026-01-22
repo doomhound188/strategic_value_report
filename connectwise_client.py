@@ -90,3 +90,8 @@ class ConnectWiseClient:
         
         total_hours = sum(entry.get('actualHours', 0) for entry in entries)
         return total_hours
+    
+    def get_members(self):
+        """Fetch list of active technicians/members."""
+        return self._get("system/members", params={"conditions": "inactiveFlag=false", "pageSize": 1000})
+

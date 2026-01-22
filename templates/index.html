@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Value Report Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Strategic Value Report</h1>
+            <p class="subtitle">Generate compelling performance review narratives</p>
+        </header>
+
+        <div class="card">
+            <form id="reportForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="technician">👤 Technician</label>
+                        <select id="technician" name="member_id" required>
+                            <option value="">Loading technicians...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="provider">🤖 LLM Provider</label>
+                        <select id="provider" name="provider" required>
+                            <option value="">Loading providers...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">📅 Start Date</label>
+                        <input type="date" id="startDate" name="start_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">📅 End Date</label>
+                        <input type="date" id="endDate" name="end_date" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="generateBtn" class="btn-primary">
+                    <span class="btn-text">✨ Generate Report</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner"></span> Generating...
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <div id="resultSection" class="card result-card" style="display: none;">
+            <div class="result-header">
+                <h2>📊 Generated Report</h2>
+                <div class="result-actions">
+                    <span id="ticketCount" class="badge"></span>
+                    <button id="copyBtn" class="btn-secondary" onclick="copyReport()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+            <div id="reportContent" class="report-content"></div>
+            <div id="rawMarkdown" style="display: none;"></div>
+        </div>
+
+        <div id="errorSection" class="card error-card" style="display: none;">
+            <h3>❌ Error</h3>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Initialize form
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTechnicians();
+            await loadProviders();
+            setDefaultDates();
+        });
+
+        async function loadTechnicians() {
+            try {
+                const response = await fetch('/api/members');
+                const members = await response.json();
+
+                const select = document.getElementById('technician');
+                select.innerHTML = '<option value="">Select a technician...</option>';
+
+                if (Array.isArray(members)) {
+                    members.sort((a, b) => a.name.localeCompare(b.name));
+                    members.forEach(m => {
+                        const option = document.createElement('option');
+                        option.value = m.identifier;
+                        option.textContent = `${m.name} (${m.identifier})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load technicians:', error);
+                document.getElementById('technician').innerHTML =
+                    '<option value="">Failed to load technicians</option>';
+            }
+        }
+
+        async function loadProviders() {
+            try {
+                const response = await fetch('/api/providers');
+                const providers = await response.json();
+
+                const select = document.getElementById('provider');
+                select.innerHTML = '';
+
+                if (Array.isArray(providers) && providers.length > 0) {
+                    providers.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.id;
+                        option.textContent = `${p.name} (${p.model})`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No providers configured</option>';
+                }
+            } catch (error) {
+                console.error('Failed to load providers:', error);
+                document.getElementById('provider').innerHTML =
+                    '<option value="">Failed to load providers</option>';
+            }
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const threeMonthsAgo = new Date(today);
+            threeMonthsAgo.setMonth(today.getMonth() - 3);
+
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = threeMonthsAgo.toISOString().split('T')[0];
+        }
+
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('generateBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+
+            // Show loading state
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-flex';
+            btn.disabled = true;
+
+            // Hide previous results
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+
+            try {
+                const techSelect = document.getElementById('technician');
+                const selectedOption = techSelect.options[techSelect.selectedIndex];
+                const technicianName = selectedOption.textContent.split(' (')[0]; // Get name without identifier
+
+                const formData = {
+                    member_id: techSelect.value,
+                    technician_name: technicianName,
+                    start_date: document.getElementById('startDate').value,
+                    end_date: document.getElementById('endDate').value,
+                    provider: document.getElementById('provider').value
+                };
+
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                // Display the report
+                document.getElementById('rawMarkdown').textContent = result.report;
+                document.getElementById('reportContent').innerHTML = marked.parse(result.report);
+                document.getElementById('ticketCount').textContent =
+                    `${result.processed_count || 0} tickets processed`;
+                document.getElementById('resultSection').style.display = 'block';
+
+                // Scroll to results
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message;
+                document.getElementById('errorSection').style.display = 'block';
+            } finally {
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+
+        function copyReport() {
+            const markdown = document.getElementById('rawMarkdown').textContent;
+            navigator.clipboard.writeText(markdown).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

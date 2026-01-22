@@ -1,3 +1,7 @@
 requests
 python-dotenv
-google.genai
+google-genai
+flask
+gunicorn
+openai
+anthropic
