@@ -118,7 +118,7 @@
                     providers.forEach(p => {
                         const option = document.createElement('option');
                         option.value = p.id;
-                        option.textContent = `${p.name} (${p.model})`;
+                        option.textContent = p.name;
                         select.appendChild(option);
                     });
                 } else {

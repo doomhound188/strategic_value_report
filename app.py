@@ -65,13 +65,20 @@ def generate_report():
         technician_name = data.get('technician_name', member_id)
         start_date = data.get('start_date')
         end_date = data.get('end_date')
-        provider = data.get('provider', 'gemini')
+        provider_id = data.get('provider', 'gemini:gemini-2.5-pro')
+        
+        if ':' in provider_id:
+            provider, model = provider_id.split(':', 1)
+        else:
+            provider = provider_id
+            model = None
+
         
         if not all([member_id, start_date, end_date]):
             return jsonify({'error': 'Missing required fields: member_id, start_date, end_date'}), 400
         
         cw = get_cw_client()
-        llm = LLMProcessor(provider=provider)
+        llm = LLMProcessor(provider=provider, model=model)
         
         # Build conditions
         conditions = f'dateEntered >= [{start_date}] AND dateEntered <= [{end_date}]'

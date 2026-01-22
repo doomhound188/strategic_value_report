@@ -6,28 +6,35 @@ class LLMProcessor:
     PROVIDERS = {
         'gemini': {
             'name': 'Google Gemini',
-            'model': 'gemini-2.5-pro',
-            'env_key': 'GOOGLE_API_KEY'
+            'env_key': 'GOOGLE_API_KEY',
+            'models': ['gemini-2.0-flash-001', 'gemini-2.0-flash-thinking-exp-01-21', 'gemini-2.0-pro-exp-02-05', 'gemini-1.5-pro']
         },
         'openai': {
             'name': 'OpenAI',
-            'model': 'gpt-4o',
-            'env_key': 'OPENAI_API_KEY'
+            'env_key': 'OPENAI_API_KEY',
+            'models': ['gpt-4o', 'gpt-4o-mini', 'o1-mini', 'o3-mini']
         },
         'anthropic': {
             'name': 'Anthropic',
-            'model': 'claude-sonnet-4-20250514',
-            'env_key': 'ANTHROPIC_API_KEY'
+            'env_key': 'ANTHROPIC_API_KEY',
+            'models': ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022']
         }
     }
     
-    def __init__(self, provider='gemini'):
+    def __init__(self, provider='gemini', model=None):
         self.provider = provider.lower()
         if self.provider not in self.PROVIDERS:
             raise ValueError(f"Unknown provider: {provider}. Supported: {list(self.PROVIDERS.keys())}")
         
         config = self.PROVIDERS[self.provider]
-        self.model = config['model']
+        
+        # Use provided model or default to the first one in the list
+        self.model = model if model else config['models'][0]
+        
+        if model and model not in config['models']:
+            # Optional: Allow custom models or warn, but for now we'll allow it passed through
+            pass
+
         api_key = os.getenv(config['env_key'])
         
         if not api_key:
@@ -43,6 +50,22 @@ class LLMProcessor:
         elif self.provider == 'anthropic':
             import anthropic
             self.client = anthropic.Anthropic(api_key=api_key)
+    
+    @classmethod
+    def get_available_providers(cls):
+        """Return list of available providers and their models based on configured API keys."""
+        available = []
+        for key, config in cls.PROVIDERS.items():
+            if os.getenv(config['env_key']):
+                # Flatten the list: Return unique entry for each model
+                for model in config['models']:
+                    available.append({
+                        'id': f"{key}:{model}",
+                        'provider': key,
+                        'name': f"{config['name']} - {model}",
+                        'model': model
+                    })
+        return available
     
     def _build_prompt(self, ticket_data, technician_name="the employee"):
         """Build the prompt from ticket data."""
