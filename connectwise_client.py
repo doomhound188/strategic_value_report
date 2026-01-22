@@ -75,8 +75,12 @@ class ConnectWiseClient:
             
         return self._get("project/tickets", params=params)
 
-    def get_ticket_notes(self, ticket_id):
-        return self._get(f"service/tickets/{ticket_id}/notes")
+    def get_ticket_notes(self, ticket_id, member_id=None):
+        """Fetch ticket notes, optionally filtered by member."""
+        params = {}
+        if member_id:
+            params["conditions"] = f'member/identifier="{member_id}"'
+        return self._get(f"service/tickets/{ticket_id}/notes", params=params)
 
     def get_ticket_time_entries(self, ticket_id):
         # Filter time entries by ticketId

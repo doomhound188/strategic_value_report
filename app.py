@@ -99,7 +99,8 @@ def generate_report():
             t_summary = t['summary']
             t_date = t.get('dateClosed') or t.get('dateEntered') or "Unknown Date"
             
-            notes = cw.get_ticket_notes(t_id)
+            # Only fetch notes created by this technician
+            notes = cw.get_ticket_notes(t_id, member_id=member_id)
             notes_text = ""
             if notes:
                 notes_text = "\n".join([f"- [{n.get('dateCreated')}] {n.get('text')}" for n in notes])
