@@ -12,8 +12,18 @@
 <body>
     <div class="container">
         <header>
-            <h1>🚀 Strategic Value Report</h1>
-            <p class="subtitle">Generate compelling performance review narratives</p>
+            <div class="header-content">
+                <div>
+                    <h1>🚀 Strategic Value Report</h1>
+                    <p class="subtitle">Generate compelling performance review narratives</p>
+                </div>
+                {% if user %}
+                <div class="user-info">
+                    <span class="user-name">👤 {{ user.name }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn-logout">Logout</a>
+                </div>
+                {% endif %}
+            </div>
         </header>
 
         <div class="card">

@@ -1,13 +1,31 @@
 import os
 import concurrent.futures
 from flask import Flask, render_template, jsonify, request
+from flask_session import Session
 from dotenv import load_dotenv
 from connectwise_client import ConnectWiseClient
 from llm_processor import LLMProcessor
+from auth import auth_bp, init_auth, login_required, get_current_user
 
 load_dotenv()
 
 app = Flask(__name__)
+
+# Configure session for authentication
+secret_key = os.getenv('FLASK_SECRET_KEY')
+if not secret_key:
+    app.logger.warning("FLASK_SECRET_KEY not set! Sessions will reset on restart. Set this in production.")
+    secret_key = os.urandom(24).hex()
+
+app.config['SECRET_KEY'] = secret_key
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = '/app/flask_session'
+app.config['SESSION_PERMANENT'] = False
+Session(app)
+
+# Initialize and register authentication
+auth_configured = init_auth(app)
+app.register_blueprint(auth_bp)
 
 # Initialize ConnectWise client once
 cw_client = None
@@ -20,12 +38,15 @@ def get_cw_client():
 
 
 @app.route('/')
+@login_required
 def index():
     """Serve the main web form."""
-    return render_template('index.html')
+    user = get_current_user()
+    return render_template('index.html', user=user)
 
 
 @app.route('/api/members')
+@login_required
 def get_members():
     """Fetch list of ConnectWise technicians."""
     try:
@@ -47,6 +68,7 @@ def get_members():
 
 
 @app.route('/api/providers')
+@login_required
 def get_providers():
     """Get list of available LLM providers."""
     try:
@@ -57,6 +79,7 @@ def get_providers():
 
 
 @app.route('/api/generate', methods=['POST'])
+@login_required
 def generate_report():
     """Generate strategic value report."""
     try:

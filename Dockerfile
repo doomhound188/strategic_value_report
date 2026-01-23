@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Create session directory for Flask-Session
+RUN mkdir -p /app/flask_session
+
 # Expose port
 EXPOSE 5000
 

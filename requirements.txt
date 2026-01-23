@@ -5,3 +5,6 @@ flask
 gunicorn
 openai
 anthropic
+msal
+Flask-Session
+cachelib

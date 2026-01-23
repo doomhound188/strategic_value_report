@@ -21,12 +21,29 @@ The AI acts as a "Career Negotiation Consultant," translating technical data int
 
 ## Usage
 
-The easiest way to run the application is using the pre-built container from GitHub Container Registry.
+### Production Deployment: Azure Container Apps (Recommended)
 
-### 1. Configure Environment
+The application is designed to run on **Azure Container Apps** with automatic scaling and pay-per-use pricing.
+
+📘 **See [AZURE_SETUP.md](AZURE_SETUP.md) for complete deployment guide**
+
+**Features:**
+- ✅ Scale-to-zero when idle (cost savings)
+- ✅ Automatic deployments via GitHub Actions
+- ✅ Built-in HTTPS and custom domains
+- ✅ ~$0-15/month depending on usage
+- ✅ Microsoft Entra ID authentication
+
+---
+
+### Local Development: Docker/Podman
+
+The easiest way to run locally is using the pre-built container from GitHub Container Registry.
+
+**1. Configure Environment**
 Create a `.env` file with your ConnectWise and AI credentials (see `.env.example`).
 
-### 2. Run with Podman/Docker
+**2. Run with Podman/Docker**
 
 ```bash
 # Pull the latest image

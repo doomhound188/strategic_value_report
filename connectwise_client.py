@@ -96,6 +96,9 @@ class ConnectWiseClient:
         return total_hours
     
     def get_members(self):
-        """Fetch list of active technicians/members."""
-        return self._get("system/members", params={"conditions": "inactiveFlag=false", "pageSize": 1000})
+        """Fetch list of active technicians/members (excludes API accounts)."""
+        return self._get("system/members", params={
+            "conditions": "inactiveFlag=false AND licenseClass!=\"A\"",
+            "pageSize": 1000
+        })
 
